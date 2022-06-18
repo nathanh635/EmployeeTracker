@@ -23,10 +23,34 @@ const db = mysql.createConnection(
   console.log(`Connected to the employee_tracker_db database.`)
 );
 
+function viewDepartments() {
 // Query database
-db.query('SELECT * FROM students', function (err, results) {
+db.query('SELECT * FROM departments', function (err, results) {
   console.log(results);
 });
+};
+
+function viewRoles() {
+    // Query database
+    db.query('SELECT * FROM roles', function (err, results) {
+      console.log(results);
+    });
+    };
+
+function viewEmployees() {
+    // Query database
+    db.query('SELECT * FROM employees', function (err, results) {
+    console.log(results);
+    });
+    };
+
+    
+function viewRoles() {
+    // Query database
+    db.query('SELECT * FROM roles', function (err, results) {
+        console.log(results);
+    });
+    };
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
@@ -109,13 +133,13 @@ function addTeamMember() {
     //send user to appropriate function.
     switch (data.selection) {
         case 'View all departments':
-          day = "Sunday";
+          viewDepartments();
           break;
         case 'View all roles':
-          day = "Monday";
+          viewRoles();
           break;
         case 'View all employees':
-           day = "Tuesday";
+           viewEmployees();
           break;
         case 'Add a department':
           day = "Wednesday";
