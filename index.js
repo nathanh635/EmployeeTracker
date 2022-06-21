@@ -13,7 +13,7 @@ const db = mysql.createConnection(
     password: process.env.password,
     database: process.env.database
   },
-  console.log(`Connected to the ${process.env.database} database.`)
+//  console.log(`Connected to the ${process.env.database} database.`)
 );
 
 function viewDepartments() {
