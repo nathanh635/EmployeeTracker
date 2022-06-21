@@ -1,17 +1,25 @@
 INSERT INTO department (id, name)
-VALUES (001, "Accounting"),
-       (002, "Information Technology"),
-       (003, "Software Development"),
-       (004, "Business Development");
+VALUES (001, "Sales"),
+       (002, "Engineering"),
+       (003, "Finance"),
+       (004, "Legal");
        
 INSERT INTO role (id, title, salary, department_id)
-VALUES (001, "Junior Engineer", 32.71, 003),
-       (002, "Junior Accountant", 28.62, 001),
-       (003, "Senior Vice President", 46.87, 004),
-       (004, "Senior Accountant", 34.89, 001);
+VALUES (001, "Sales Lead", 100000, 001),
+       (002, "Salesperson", 80000, 001),
+       (003, "Lead Engineer", 150000, 002),
+       (004, "Software Engineer", 120000, 002),
+       (005, "Account Manager", 160000, 003),
+       (006, "Accountant", 125000, 003),
+       (007, "Legal Team Lead", 250000, 004),
+       (008, "Lawyer", 190000, 004);
 
        INSERT INTO employee (id, first_name, last_name, role_id, manager_id)
-VALUES (001, "Algebra I", "Linear equations, inequalities, functions, and graphs", true),
-       (002, "Pre-Calculus", "Polynomials, Complex Numbers, Vectors", true),
-       (003, "Calculus I", "Limits, Differentiation, Derivatives", true),
-       (004, "Euclidean Geometry", "Intuitively Appealing Axioms Galore", false);
+VALUES (001, "John", "Doe", 001, null),
+       (002, "Mike", "Chan", 002, 001),
+       (003, "Ashley", "Rodriquez", 003, null),
+       (004, "Kevin", "Tupik", 004, 003),
+       (005, "Kunal", "Singh", 005, null),
+       (006, "Malia", "Brown", 006, 005),
+       (007, "Sarah", "Lourd", 007, null),
+       (008, "Tom", "Allen", 008, 007);
