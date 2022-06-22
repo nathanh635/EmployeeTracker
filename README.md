@@ -1,11 +1,17 @@
-# Note Taker
+# Employee Tracker
   ![license description](https://img.shields.io/badge/license-GNU_GPLv3-blue)
 
   ## Description
 
-  The application is designed to take input from the user for a note's title and body, and save it to a json file. The note is given a unique ID, and the ID, title, and text are written to a json file.
+  The application is designed to manage a database of employees, roles, and departments. The application queries the database based on inputs provided from the user in the command line. The application can:
   
-  The application also includes a delete function to delete notes. The delete function matches the id of the note clicked with the id within the json file, and removes it from the file before rewriting the new array to the file.
+  -  Show a list of departments, roles, or employees;
+  -  Update existing records for employees, managers, and roles;
+  -  Add departments, roles, or managers to the database; 
+  -  Delete existing employees, roles, or departments; and
+  -  View the total budget for a specific department.
+  
+  The application runs using inquirer and command line inputs from provided lists.
 
 ## Table of Contents
 
@@ -20,11 +26,11 @@
 
   ## Installation
 
-  The application requires express.js to run locally.
+  The application requires inquirer and mysql2 as npm packages to run.
 
   ## Usage
 
-  After running npm install, run npm start from the command line and access through the local host. Alternatively, use the Heroku link provided below.
+  After running npm install, run node index.js from the command line  to start the application.
 
   ## License
 
@@ -45,7 +51,7 @@
   You can reach me at GitHub; my username is nathanh635 and my profile is here: https://github.com/nathanh635. 
   You can also email me at nathanh635@gmail.com. 
   
-    ## Screenshots
+  ## Screenshots
 
   Below is a screenshot of the deployed page.
 
@@ -53,7 +59,7 @@
   
 ## Links
 
-  Repository: https://github.com/nathanh635/NoteTaker
+  Repository: https://github.com/nathanh635/EmployeeTracker
   
-  Heroku Deployment: https://fathomless-dawn-24182.herokuapp.com/notes
+  Link to walkthrough video: 
 

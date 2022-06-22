@@ -83,7 +83,7 @@ function addRole() {
   let dIDs = [];
   let x;
 
-  //query the database to define the departments to select from for the final options
+  //query the database to define the departments to select from for the options
 
   db.query(`SELECT * FROM department`, function (err, results) {
     for (let i = 0; i<results.length; i++) {
@@ -132,31 +132,32 @@ function addRole() {
 
 //Query to add new employee to database
 function addEmployee() {
-  // Ask for new employee information
+  // Setup variables
 
   let roles = [];
   let roleIDs = [];
   let employees = [];
   let employeeIDs = [];
   let x;
-  let you;
+  let y;
 
-  //define the departments to select from for the final options
+  //define the roles to select from for the new employee
 
   db.query(`SELECT * FROM role`, function (err, results) {
     for (let i = 0; i<results.length; i++) {
         roles.push(results[i].name); 
         roleIDs.push(results[i].id);
     }
-
   })
+
+    //define the list of employees as potential managers
 
   db.query(`SELECT * FROM employee`, function (err, results) {
     for (let i = 0; i<results.length; i++) {
-        employees.push(results[i].name); 
+      let current = results[i].first_name & " " & results[i].last_name;
+        employees.push(current); 
         employeeIDs.push(results[i].id);
     }
-
   })
 
   inquirer
@@ -186,9 +187,12 @@ function addEmployee() {
     ])
     .then((data) => {
 
+      x = roles.indexOf(data.role,0);
+      y = employees.indexOf(data.employee,0);
+
       //send to database
 
-      db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ("${data.firstName}", "${data.lastName}", ${data.role}, ${data.manager})`, function (err, results) {
+      db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ("${data.firstName}", "${data.lastName}", ${roleIDs[x]}, ${employeeIDs[y]})`, function (err, results) {
         console.log(`Added ${data.firstName} ${data.lastName} to the database`);
       });
     })
@@ -203,23 +207,25 @@ function addEmployee() {
 
 function updateEmployeeRole() {
   // Query database
-// Ask for new employee information
+// Set empty variables
 
 let roles = [];
 let roleIDs = [];
 let employees = [];
 let employeeIDs = [];
 let x;
+let y;
 
-//define the departments to select from for the final options
+//define the roles to choose from
 
 db.query(`SELECT * FROM role`, function (err, results) {
   for (let i = 0; i<results.length; i++) {
       roles.push(results[i].name); 
       roleIDs.push(results[i].id);
   }
-
 })
+
+//define the list of employees to be updated
 
 db.query(`SELECT * FROM employee`, function (err, results) {
   for (let i = 0; i<results.length; i++) {
@@ -229,11 +235,13 @@ db.query(`SELECT * FROM employee`, function (err, results) {
   }
 })
 
+//get user input
+
 inquirer
     .prompt([
       {
         type: 'list',
-        message: "Whhich employee do you want to change the role for? ",
+        message: "Which employee do you want to change the role for? ",
         name: 'employee',
         choices: employees
       },
@@ -246,10 +254,13 @@ inquirer
     ])
     .then((data) => {
 
+      x = roles.indexOf(data.role,0);
+      y = employees.indexOf(data.employee,0);
+
       //send to database
 
-      db.query(`UPDATE employee SET role_id = _______ WHERE VALUES ("${data.firstName}", "${data.lastName}", ${data.role}, ${data.manager})`, function (err, results) {
-        console.log(`Updated ${data.firstName} ${data.lastName} to the database`);
+      db.query(`UPDATE employee SET role_id = ${roles[x]} WHERE id = ${employeeIDs[y]}`, function (err, results) {
+        console.log(`Updated ${data.employee}'s role in the database`);
       });
     })
     .then(() => {
@@ -264,20 +275,74 @@ inquirer
 
 function updateEmployeeManager() {
   // Query database
-  db.query('INSERT * FROM roles', function (err, results) {
-    console.log(results);
-  });
-};
 
-//--------------------------------------------------------------------------------------//
+ // Set empty variables
 
-//--------------------------------------------------------------------------------------//
+let employees = [];
+let employeeIDs = [];
+let managers = [];
+let managerIDs = [];
 
-function updateEmployeeManager() {
-  // Query database
-  db.query('INSERT * FROM roles', function (err, results) {
-    console.log(results);
-  });
+let x;
+let y;
+
+//define the employees to select from
+
+db.query(`SELECT * FROM employee`, function (err, results) {
+  for (let i = 0; i<results.length; i++) {
+    let current = results[i].first_name & " " & results[i].last_name;
+      employees.push(current); 
+      employeeIDs.push(results[i].id);
+      managers.push(current); 
+      managerIDs.push(results[i].id);
+  }
+})
+
+//Get user input
+
+inquirer
+    .prompt([
+      {
+        type: 'list',
+        message: "Which employee do you want to change the manager for? ",
+        name: 'employee',
+        choices: employees
+      },
+    ])
+    .then((data) => {
+
+      //remove employee from array of managers, since they can't be their own manager
+
+      x = employees.indexOf(data.employee,0);
+      managers.splice(x,1);
+      managerIDs.splice(x,1);
+
+    })
+
+    //get new manager from user
+    inquirer
+    .prompt([
+      {
+        type: 'list',
+        message: "Who is the employee's new manager? ",
+        name: 'manager',
+        choices: managers
+      },
+    ])
+    .then((data) => {
+
+      y = managers.indexOf(data.manager,0);
+
+      //send to database
+
+      db.query(`UPDATE employee SET manager_id = ${managerIDs[y]} WHERE id = ${employeeIDs[x]}`, function (err, results) {
+        console.log(`Updated ${employees[x]}'s manager in the database`);
+      });
+    })
+    .then(() => {
+      mainMenu();
+    })
+
 };
 
 //--------------------------------------------------------------------------------------//
@@ -285,6 +350,11 @@ function updateEmployeeManager() {
 //--------------------------------------------------------------------------------------//
 
 function viewManagerEmployees() {
+
+  let employees = [];
+  let employeeIDs = [];
+  
+  let x;
 
   db.query(`SELECT * FROM employee`, function (err, results) {
     for (let i = 0; i<results.length; i++) {
@@ -300,14 +370,19 @@ function viewManagerEmployees() {
         type: 'list',
         message: "Which manager's employees would you like to view? ",
         name: 'manager',
-        choices: []
+        choices: employees
       },
     ])
     .then((data) => {
-      db.query(`SELECT id FROM employee as ID, first_name FROM employee as "First Name", last_name FROM employee as "Last Name", role FROM role as Role WHERE manager_id=${data.manager}`, function (err, results) {
-        console.log(results);
+
+      x = employees.indexOf(data.employee,0);
+
+      db.query(`SELECT employee.id, employee.first_name as "First Name", employee.last_name as "Last Name", role.title as Role FROM employee JOIN role ON employee.role_id = role.id WHERE manager_id=${employeeIDs[x]}`, function (err, results) {
+        console.log(`Viewing ${data.manager}'s staff:`);
+        console.table(results);
       });
     })
+    mainMenu();
 };
 
 //--------------------------------------------------------------------------------------//
@@ -316,18 +391,22 @@ function viewManagerEmployees() {
 
 function viewDepartmentEmployees() {
 
+  //set empty variables
+
   let departments = [];
   let depIDs = [];
+
+  //make list of departments to choose from
 
   db.query(`SELECT * FROM department`, function (err, results) {
     for (let i = 0; i<results.length; i++) {
 
-        departments.push(results.name); 
+        departments.push(results[i].name); 
         depIDs.push(results[i].id);
     }
   })
 
-    // Query database
+    // get user input
   inquirer
     .prompt([
       {
@@ -338,10 +417,12 @@ function viewDepartmentEmployees() {
       },
     ])
     .then((data) => {
-      db.query('SELECT department.name AS "Department Name", employee.first_name AS "First Name", employee.last_name AS "Last Name", role.title AS "Role" FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE department.name = "${results.department}";', function (err, results) {
+
+      db.query(`SELECT department.name AS "Department Name", employee.first_name AS "First Name", employee.last_name AS "Last Name", role.title AS "Role" FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE department.name = "${results.department}";`, function (err, results) {
         console.table(results);
       });
     })
+    mainMenu();
 };
 
 //--------------------------------------------------------------------------------------//
@@ -357,12 +438,12 @@ function deleteDepartment() {
   db.query(`SELECT * FROM department`, function (err, results) {
     for (let i = 0; i<results.length; i++) {
 
-        departments.push(results.name); 
+        departments.push(results[i].name); 
         depIDs.push(results[i].id);
     }
   })
 
-  // Ask for new role information
+  // Ask for department name to delete
   inquirer
     .prompt([
       {
@@ -373,12 +454,13 @@ function deleteDepartment() {
       },
     ])
     .then((data) => {
-      x = departments.indexOf(department,0);
+      x = departments.indexOf(data.department,0);
 
       db.query(`DELETE FROM department WHERE id="${depIDs[x]}"`, function (err, results) {
         console.log(`${data.department} department deleted.`);
       });
     })
+    mainMenu();
 };
 
 //--------------------------------------------------------------------------------------//
@@ -386,22 +468,21 @@ function deleteDepartment() {
 //--------------------------------------------------------------------------------------//
 
 function deleteRole() {
-  // Query database
+  // Set empty variables
   let roles = [];
   let roleIDs = [];
-  let employees = [];
-  let employeeIDs = [];
   let x;
   
-  //define the departments to select from for the final options
+  //define the roles to select from 
   
   db.query(`SELECT * FROM role`, function (err, results) {
     for (let i = 0; i<results.length; i++) {
         roles.push(results[i].name); 
         roleIDs.push(results[i].id);
     }
-  
-  })
+   })
+
+   //get user input
 
   inquirer
     .prompt([
@@ -409,16 +490,17 @@ function deleteRole() {
         type: 'list',
         message: "Which role should be deleted? ",
         name: 'role',
-        choices: []
+        choices: roles
       },
     ])
     .then((data) => {
+      x = roles.indexOf(data.role,0);
 
-
-      db.query('DELETE FROM role WHERE id=""', function (err, results) {
+      db.query(`DELETE FROM role WHERE id="${roleIDs[x]}"`, function (err, results) {
         console.log(`${data.role} role deleted.`);
       });
     })
+    mainMenu();
 };
 
 //--------------------------------------------------------------------------------------//
@@ -426,13 +508,13 @@ function deleteRole() {
 //--------------------------------------------------------------------------------------//
 
 function deleteEmployee() {
-  // Query database
+  // set empty variables
 
   let employees = [];
   let employeeIDs = [];
   let x;
 
-  //define the departments to select from for the final options
+  //define the list of employees to select from 
 
   db.query(`SELECT * FROM employee`, function (err, results) {
     for (let i = 0; i<results.length; i++) {
@@ -441,6 +523,8 @@ function deleteEmployee() {
         employeeIDs.push(results[i].id);
     }
   })
+
+//get user input
 
   inquirer
     .prompt([
@@ -453,12 +537,13 @@ function deleteEmployee() {
     ])
     .then((data) => {
 
-      x = departments.indexOf(department,0);
+      x = employees.indexOf(data.employee,0);
 
       db.query(`DELETE FROM employee WHERE id="${employeeIDs[x]}"`, function (err, results) {
         console.log(`${data.employee} employee file deleted.`);
       });
     })
+    mainMenu();
 };
 
 //--------------------------------------------------------------------------------------//
@@ -470,6 +555,7 @@ function viewDepartmentBudget() {
      db.query('SELECT department.name AS "Department Name", SUM(role.salary) AS "Total Budget" FROM role JOIN department ON role.department_id = department.id GROUP BY department.name;', function (err, results) {
     console.table(results);
   });
+  mainMenu();
 };
 
 //--------------------------------------------------------------------------------------//
