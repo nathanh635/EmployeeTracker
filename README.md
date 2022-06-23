@@ -53,13 +53,13 @@
   
   ## Screenshots
 
-  Below is a screenshot of the deployed page.
+  Below is a screenshot of the application.
 
-![deployed page](./assets/images/screenshot.PNG)
+![deployed page](./assets/screenshot.PNG)
   
 ## Links
 
   Repository: https://github.com/nathanh635/EmployeeTracker
   
-  Link to walkthrough video: 
+  Link to walkthrough video: https://drive.google.com/drive/folders/1JgyT0ULC8ouPEMYY_-QppBtg9-6-sxui?usp=sharing
 
