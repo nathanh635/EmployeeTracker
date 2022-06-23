@@ -163,6 +163,7 @@ function addEmployee() {
       let current = results[i].first_name + " " + results[i].last_name;
         employees.push(current); 
         employeeIDs.push(results[i].id);
+
     }
   })
 
@@ -198,7 +199,7 @@ function addEmployee() {
 
       //send to database
 
-      db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ("${data.firstName}", "${data.lastName}", ${roleIDs[x]}, ${employeeIDs[y]})`, function (err, results) {
+      db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${data.firstName}", "${data.lastName}", ${roleIDs[x]}, ${employeeIDs[y]})`, function (err, results) {
 
       });
       console.log(`\nAdded ${data.firstName} ${data.lastName} to the database`);
@@ -580,7 +581,8 @@ function deleteEmployee() {
 function viewDepartmentBudget() {
   // Query database
      db.query('SELECT department.name AS "Department Name", SUM(role.salary) AS "Total Budget" FROM role JOIN department ON role.department_id = department.id GROUP BY department.name;', function (err, results) {
-    console.table("/n" + results);
+    console.log("\n")
+      console.table(results);
   });
   mainMenu();
 };
