@@ -2,8 +2,9 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer')
 
-let db;
+let db
 db = require('./db/connection')
+
 
 //--------------------------------------------------------------------------------------//
 
@@ -93,6 +94,7 @@ function addRole() {
     }
   })
 
+
   //take information from the user about what role to add
   inquirer
     .prompt([
@@ -121,7 +123,7 @@ function addRole() {
       db.query(`INSERT INTO role (title, salary, department_id) VALUES ("${data.roleName}", ${data.salary}, ${dIDs[x]})`, function (err, results) {
 
       });
-      console.log(`Added ${data.roleName} to the database`);
+      console.log(`\nAdded ${data.roleName} to the database`);
     })
     .then(() => {
       mainMenu();
@@ -134,6 +136,35 @@ function addRole() {
 
 //Query to add new employee to database
 function addEmployee() {
+  // Setup variables
+
+  let roles = [];
+  let roleIDs = [];
+  let employees = [];
+  let employeeIDs = [];
+  let x;
+  let y;
+
+  //define the roles to select from for the new employee
+
+
+  db.query(`SELECT * FROM role`, function (err, results) {
+    for (let i = 0; i<results.length; i++) {
+        roles.push(results[i].title); 
+        roleIDs.push(results[i].id);
+    }
+  })
+
+
+    //define the list of employees as potential managers
+
+  db.query(`SELECT * FROM employee`, function (err, results) {
+    for (let i = 0; i<results.length; i++) {
+      let current = results[i].first_name + " " + results[i].last_name;
+        employees.push(current); 
+        employeeIDs.push(results[i].id);
+    }
+  })
 
   inquirer
     .prompt([
@@ -147,41 +178,30 @@ function addEmployee() {
         message: "What is the employee's last name? ",
         name: 'lastName',
       },
-    ])
-
-    db.query(`SELECT * FROM role`, function (err, results) {
-      console.log(results)
-        })
-
-    inquirer
-    .prompt([
       {
-        type: 'input',
-        message: "What is the id of the employee's role? ",
-        name: 'role'
-      },])
-
-          //define the list of employees as potential managers
-
-  db.query(`SELECT * FROM employee`, function (err, results) {
-    console.log(results);
-  })
-
-      inquirer
-      .prompt([
+        type: 'list',
+        message: "What is the employee's role? ",
+        name: 'role',
+        choices: roles
+      },
       {
-        type: 'input',
-        message: "What will be the ID of the employee's manager? ",
-        name: 'manager'
+        type: 'list',
+        message: "Who is the employee's manager? ",
+        name: 'manager',
+        choices: employees
       },
     ])
     .then((data) => {
 
+      x = roles.indexOf(data.role,0);
+      y = employees.indexOf(data.employee,0);
+
       //send to database
 
       db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ("${data.firstName}", "${data.lastName}", ${roleIDs[x]}, ${employeeIDs[y]})`, function (err, results) {
-        console.log(`Added ${data.firstName} ${data.lastName} to the database`);
+
       });
+      console.log(`\nAdded ${data.firstName} ${data.lastName} to the database`);
     })
     .then(() => {
       mainMenu();
@@ -199,6 +219,7 @@ function updateEmployeeRole() {
 //define the list of employees to be updated
 
 db.query(`SELECT * FROM employee`, function (err, results) {
+  console.log("\n")
 console.table(results);
 })
 
@@ -208,15 +229,16 @@ inquirer
     .prompt([
       {
         type: 'input',
-        message: "Select the id of the employee you want to change the role for? ",
+        message: "Enter the id of the employee you want to change the role for? ",
         name: 'employee',
       },
     ])
 
-    let table = db.query(`SELECT * FROM role`, function (err, results) {
-
+    db.query(`SELECT * FROM role`, function (err, results) {
+      console.log("\n")
+      console.table(results);
     });
-    console.table(table);
+
     
     inquirer
     .prompt([
@@ -247,40 +269,67 @@ inquirer
 function updateEmployeeManager() {
   // Query database
 
+ // Set empty variables
+
+let employees = [];
+let employeeIDs = [];
+let managers = [];
+let managerIDs = [];
+
+let x;
+let y;
+
 //define the employees to select from
 
-db.query(`SELECT * FROM employee`, function (err, results) {
-console.log(results)
+db.Query(`SELECT * FROM employee`, function (err, results) {
+
 })
+for (let i = 0; i<results.length; i++) {
+let current = results[i].first_name + " " + results[i].last_name;
+employees.push(current); 
+employeeIDs.push(results[i].id);
+managers.push(current); 
+managerIDs.push(results[i].id);}
 
 //Get user input
 
 inquirer
     .prompt([
       {
-        type: 'input',
-        message: "Enter the ID of the employee you want to change the manager for: ",
+        type: 'list',
+        message: "Which employee do you want to change the manager for? ",
         name: 'employee',
-      },
-    ])
-
-    db.query(`SELECT * FROM employee`, function (err, results) {
-      console.log(results)
-      })
-      
-    //get new manager from user
-    inquirer
-    .prompt([
-      {
-        type: 'input',
-        message: "Enter the ID of the employee's new manager? ",
-        name: 'manager',
+        choices: employees
       },
     ])
     .then((data) => {
 
-      db.query(`UPDATE employee SET manager_id = ${data.manager} WHERE id = ${data.employee}`, function (err, results) {
-        console.log(`Updated manager in the database`);
+      //remove employee from array of managers, since they can't be their own manager
+
+      x = employees.indexOf(data.employee,0);
+      managers.splice(x,1);
+      managerIDs.splice(x,1);
+
+    })
+
+    //get new manager from user
+    inquirer
+    .prompt([
+      {
+        type: 'list',
+        message: "Who is the employee's new manager? ",
+        name: 'manager',
+        choices: managers
+      },
+    ])
+    .then((data) => {
+
+      y = managers.indexOf(data.manager,0);
+
+      //send to database
+
+      db.query(`UPDATE employee SET manager_id = ${managerIDs[y]} WHERE id = ${employeeIDs[x]}`, function (err, results) {
+        console.log(`\nUpdated ${employees[x]}'s manager in the database`);
       });
     })
     .then(() => {
@@ -295,8 +344,21 @@ inquirer
 
 function viewManagerEmployees() {
 
+  let employees = [];
+  let employeeIDs = [];
+  
+  let x;
+
   db.query(`SELECT * FROM employee`, function (err, results) {
-console.log(results);
+    for (let i = 0; i<results.length; i++) {
+      let current = results[i].first_name + " " + results[i].last_name;
+        employees.push(current); 
+        employeeIDs.push(results[i].id);
+    }
+  })
+
+  db.query(`SELECT * FROM role`, function (err, results) {
+
   })
   // Query database
   inquirer
@@ -310,11 +372,13 @@ console.log(results);
     ])
     .then((data) => {
 
+      x = employees.indexOf(data.employee,0);
 
       db.query(`SELECT employee.id, employee.first_name as "First Name", employee.last_name as "Last Name", role.title as Role FROM employee JOIN role ON employee.role_id = role.id WHERE manager_id=${employeeIDs[x]}`, function (err, results) {
-        console.log(`Viewing ${data.manager}'s staff:`);
-        console.table(results);
+
       });
+      console.log(`Viewing ${data.manager}'s staff:`);
+      console.table(results);
     })
     mainMenu();
 };
@@ -325,25 +389,40 @@ console.log(results);
 
 function viewDepartmentEmployees() {
 
+  //set empty variables
+
+  let departments = [];
+  let dIDs = [];
+
+  //make list of departments to choose from
+
   db.query(`SELECT * FROM department`, function (err, results) {
-console.log(results)
+    for (let i = 0; i<results.length; i++) {
+        departments.push(results[i].name); 
+        dIDs.push(results[i].id);
     }
+  })
+
+  db.query(`SELECT * FROM role`, function (err, results) {
+    
   })
 
     // get user input
   inquirer
     .prompt([
       {
-        type: 'input',
-        message: "Enter the ID of the department whose employees you would like to view? ",
-        name: 'department'
+        type: 'list',
+        message: "Which department's employees would you like to view? ",
+        name: 'department',
+        choices: departments
       },
     ])
     .then((data) => {
 
       db.query(`SELECT department.name AS "Department Name", employee.first_name AS "First Name", employee.last_name AS "Last Name", role.title AS "Role" FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE department.name = "${results.department}";`, function (err, results) {
-        console.table(results);
+
       });
+      console.table(results);
     })
     mainMenu();
 };
@@ -358,27 +437,52 @@ function deleteDepartment() {
   let depIDs = [];
   let x;
 
+
+function getDepartments() {
+
+return new Promise(function(resolve, reject) {
+  // The Promise constructor should catch any errors thrown on
+  // this tick. Alternately, try/catch and reject(err) on catch.
+
   db.query(`SELECT * FROM department`, function (err, results) {
-console.log(results)
+      // Call reject on error states,
+      // call resolve with results
+      if (err) {
+          return reject(err);
+      }
+      resolve(results);
+  });
+});
+}
+
+getDepartments().then(function(results){
+    for (let i = 0; i<results.length; i++) {
+        departments.push(results[i].name); 
+        depIDs.push(results[i].id);
+        console.log(departments)
+    }
   })
 
+  .then((departments, depIDs) => {
   // Ask for department name to delete
   inquirer
     .prompt([
-      {
-        type:"input",
-        message: "Enter the ID of the department to delete: ",
-        name: 'department'
+ {
+        type: 'list',
+        message: "Which department should be deleted? ",
+        name: 'department',
+        choices: departments
       },
     ])
     .then((data) => {
+      x = departments.indexOf(data.department,0);
 
-
-      db.query(`DELETE FROM department WHERE id="${data.department}"`, function (err, results) {
+      db.query(`DELETE FROM department WHERE id="${depIDs[x]}"`, function (err, results) {
         console.log(`${data.department} department deleted.`);
       });
-    })
-    mainMenu();
+      mainMenu();
+    })})
+
 };
 
 //--------------------------------------------------------------------------------------//
@@ -386,26 +490,37 @@ console.log(results)
 //--------------------------------------------------------------------------------------//
 
 function deleteRole() {
+  // Set empty variables
+  let roles = [];
+  let roleIDs = [];
+  let x;
   
   //define the roles to select from 
   
   db.query(`SELECT * FROM role`, function (err, results) {
- console.log(results);
-   })
+    for (let i = 0; i<results.length; i++) {
+        roles.push(results[i].title); 
+        roleIDs.push(results[i].id);
+    }
+  })
+
+console.log(roles)
 
    //get user input
 
   inquirer
     .prompt([
       {
-        type: 'input',
-        message: "Enter the ID of the role to be deleted? ",
+        type: 'list',
+        message: "Which role should be deleted? ",
         name: 'role',
+        choices: roles
       },
     ])
     .then((data) => {
+      x = roles.indexOf(data.role,0);
 
-      db.query(`DELETE FROM role WHERE id="${data.role}"`, function (err, results) {
+      db.query(`DELETE FROM role WHERE id="${roleIDs[x]}"`, function (err, results) {
         console.log(`${data.role} role deleted.`);
       });
     })
@@ -417,21 +532,33 @@ function deleteRole() {
 //--------------------------------------------------------------------------------------//
 
 function deleteEmployee() {
+  // set empty variables
+
+  let employees = [];
+  let employeeIDs = [];
+  let x;
 
   //define the list of employees to select from 
 
   db.query(`SELECT * FROM employee`, function (err, results) {
-console.log(results);
+    for (let i = 0; i<results.length; i++) {
+      let current = results[i].first_name + " " + results[i].last_name;
+        employees.push(current); 
+        employeeIDs.push(results[i].id);
+
+    }
   })
+
 
 //get user input
 
   inquirer
     .prompt([
       {
-        type: 'input',
+        type: 'list',
         message: "Which employee should be deleted? ",
-        name: 'employee'
+        name: 'employee',
+        choices: employees
       },
     ])
     .then((data) => {
@@ -453,7 +580,7 @@ console.log(results);
 function viewDepartmentBudget() {
   // Query database
      db.query('SELECT department.name AS "Department Name", SUM(role.salary) AS "Total Budget" FROM role JOIN department ON role.department_id = department.id GROUP BY department.name;', function (err, results) {
-    console.table(results);
+    console.table("/n" + results);
   });
   mainMenu();
 };
